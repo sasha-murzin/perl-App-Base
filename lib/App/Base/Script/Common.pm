@@ -30,7 +30,6 @@ use POSIX qw( strftime );
 use Text::Reform qw( form break_wrap );
 use Try::Tiny;
 
-use MooseX::Types -declare => [qw(bom_syslog_facility)];
 use MooseX::Types::Moose qw( Str Bool );
 
 has 'has_tty' => (

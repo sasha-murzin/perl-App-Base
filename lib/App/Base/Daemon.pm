@@ -115,7 +115,6 @@ use Path::Class::File qw();
 use Log::Log4perl;
 
 use POSIX qw();
-use App::Base::Types qw( bom_signal_name );
 
 =head1 ATTRIBUTES
 

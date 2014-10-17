@@ -68,10 +68,10 @@ if the 'foo' option was declared to have option_type = 'integer'.
 =cut
 
 use Moose;
-use MooseX::Types -declare => [qw(bom_script_option_type)];
+use MooseX::Types -declare => [qw(script_option_type)];
 use MooseX::Types::Moose qw( Str );
 
-subtype bom_script_option_type, as Str, where {
+subtype script_option_type, as Str, where {
     $_ =~ /^(integer|float|string|switch)$/;
 }, message {
     "Invalid option type $_";
@@ -87,7 +87,7 @@ has [qw(default display)] => (is => 'ro',);
 
 has [qw(option_type)] => (
     is      => 'ro',
-    isa     => bom_script_option_type,
+    isa     => script_option_type,
     default => 'switch',
 );
 
