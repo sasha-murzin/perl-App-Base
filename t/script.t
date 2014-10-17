@@ -1,18 +1,14 @@
-use strict;
-use warnings;
-
-use Test::More (tests => 10);
-use Test::NoWarnings;
+use Test::Most;
+use Test::FailWarnings;
 use Test::Exit;
-use Test::Exception;
-use File::Temp;
+use Path::Tiny;
 
 use App::Base::Script;
 
 sub divert_stderr {
     my $coderef = shift;
     local *STDERR;
-    is(1, open(STDERR, ">/dev/null") ? 1 : 0, "Failed to redirect STDERR");
+    is( 1, open( STDERR, ">/dev/null" ) ? 1 : 0, "Failed to redirect STDERR" );
     &$coderef;
 }
 
@@ -58,47 +54,44 @@ sub divert_stderr {
     with 'App::Base::Script::OnlyOne';
 
     sub script_run {
-        sleep($ENV{ONLY_ONE_SLEEP} // 0);
+        sleep( $ENV{ONLY_ONE_SLEEP} // 0 );
         return 0;
     }
 
 }
-
-package main;
 
 local %ENV = %ENV;
 delete $ENV{COLUMNS};
 my $sc = Test::Script->new;
 
 my $switches = qq{--help             Show this help information                                 
---quiet            Do not print debugging or informational messages           
---verbose          Be very verbose with information and debugging messages         
 };
 
-my @switch_lines = split(/[\r\n]/, $switches);
-my @output_lines = split(/[\r\n]/, $sc->switches);
+my @switch_lines = split( /[\r\n]/, $switches );
+my @output_lines = split( /[\r\n]/, $sc->switches );
 $_ =~ s/\s+/ /g for @switch_lines;
 $_ =~ s/\s+/ /g for @output_lines;
-for (my $line = 0; $line < $#switch_lines; $line++) {
-    is($switch_lines[$line], $output_lines[$line], "Switch output line " . ($line + 1) . " is correct");
+for ( my $line = 0 ; $line < $#switch_lines ; $line++ ) {
+    is( $switch_lines[$line], $output_lines[$line],
+        "Switch output line " . ( $line + 1 ) . " is correct" );
 }
-is(0, $sc->run, 'Run returns 0');
+is( 0, $sc->run, 'Run returns 0' );
 
 divert_stderr(
     sub {
-        HELP:
+      HELP:
         {
             local @ARGV = ('--help');
-            exits_ok(sub { Test::Script->new->run; }, "--help forces exit");
+            exits_ok( sub { Test::Script->new->run; }, "--help forces exit" );
         }
 
-        DEATH:
+      DEATH:
         {
             local @ARGV;
-            exits_ok(sub { Test::Script::ThatDies->new->run; }, "die() in script causes exit");
+            exits_ok( sub { Test::Script::ThatDies->new->run; }, "die() in script causes exit" );
         }
 
-        ERROR:
+      ERROR:
         {
             exits_ok(
                 sub {
@@ -111,13 +104,14 @@ divert_stderr(
     },
 );
 
-$ENV{APP_BASE_DAEMON_PIDDIR} = File::Temp->newdir;
+my $piddir = Path::Tiny->tempdir( CLEANUP => 0 );
+$ENV{APP_BASE_DAEMON_PIDDIR} = $piddir;
 
 my $pid = fork;
 die "Couldn't fork" unless defined $pid;
 
 $ENV{ONLY_ONE_SLEEP} = 100;
-if ($pid == 0) {
+if ( $pid == 0 ) {
     Test::Script::OnlyOne->new->run;
     exit 0;
 }
@@ -125,7 +119,7 @@ if ($pid == 0) {
 sleep 1;
 
 my $pid2 = fork;
-if ($pid2 == 0) {
+if ( $pid2 == 0 ) {
     Test::Script::OnlyOne->new->run;
     exit 0;
 }
@@ -138,6 +132,8 @@ kill KILL => $pid;
 waitpid $pid, 0;
 
 $ENV{ONLY_ONE_SLEEP} = 1;
-is(Test::Script::OnlyOne->new->run, 0, "OnlyOne copy can run");
+is( Test::Script::OnlyOne->new->run, 0, "OnlyOne copy can run" );
 
-1;
+$piddir->remove_tree;
+
+done_testing;

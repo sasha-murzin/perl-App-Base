@@ -1,11 +1,6 @@
-use strict;
-use warnings;
-
-use Test::More (tests => 22);
-use Test::NoWarnings;
-use Test::Warn;
+use Test::Most;
+use Test::FailWarnings;
 use Test::Exit;
-use Test::Exception;
 use Text::Trim;
 
 sub divert_stderr {
@@ -92,9 +87,7 @@ my $switches = qq{--baz              The baz option
 --foo=<f>          The foo option should be <f> (default: bar)                
 --fribitz=<f>      fribitz is a floating-point option (default: 0.01)         
 --help             Show this help information                                 
---quiet            Do not print debugging or informational messages           
 --quux=N           quux is an integer option (default: 7)                     
---verbose          Be very verbose with information and debugging messages
 };
 my $scswitches = $sc->switches;
 $scswitches =~ s/\s+/ /g;
@@ -106,26 +99,11 @@ is($sc->script_name,       'common.t',      'script_name() returns correct value
 is(trim($scswitches),      trim($switches), 'switches() returns correct value');
 divert_stderr(
     sub {
-        ok($sc->warning('warning message'), 'warning() returns true');
-
-# Exercise both the has_tty and not has_tty paths for coverage
-        $sc->has_tty(0);
-        ok($sc->warning('warning message'), 'warning() returns true');
-        $sc->has_tty(1);
-        ok($sc->warning('warning message'), 'warning() returns true');
         exits_ok(sub { $sc->usage; }, "usage() method causes exit");
         exits_ok(sub { $sc->__error("Error message"); }, "__error() method causes exit");
         throws_ok { $sc->getOption('bogus_option'); } qr/Unknown option/, 'Bogus option names cause death';
 
-        STDERR->autoflush(0);
-        $sc->has_tty(1);
         is($sc->run,          0, 'Run returns 0');
-        is(STDERR->autoflush, 1, 'STDERR autoflush is turned on if has_tty is true');
-
-        STDERR->autoflush(0);
-        $sc->has_tty(0);
-        is($sc->run,          0, 'Run returns 0');
-        is(STDERR->autoflush, 0, 'STDERR autoflush is not turned on if has_tty is true');
 
         COLUMNS:
         {
@@ -133,9 +111,7 @@ divert_stderr(
 --foo=<f>          The foo option should be <f> (default: bar)                                        
 --fribitz=<f>      fribitz is a floating-point option (default: 0.01)                                 
 --help             Show this help information                                                         
---quiet            Do not print debugging or informational messages                                   
 --quux=N           quux is an integer option (default: 7)                                             
---verbose          Be very verbose with information and debugging messages
 };
 
             local %ENV;
@@ -170,4 +146,4 @@ divert_stderr(
         }
     });
 
-1;
+done_testing;

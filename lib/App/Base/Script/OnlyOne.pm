@@ -1,6 +1,6 @@
 package App::Base::Script::OnlyOne;
 use Moose::Role;
-use Path::Class;
+use Path::Tiny;
 use File::Flock::Tiny;
 
 =head1 NAME
@@ -26,9 +26,9 @@ around script_run => sub {
     my $self = shift;
 
     my $class   = ref $self;
-    my $piddir  = $ENV{APP_BASE_DAEMON_PIDDIR} || Path::Class::Dir->new('', 'var', 'run');
-    my $pidfile = Path::Class::File->new($piddir, "$class.pid");
-    my $lock    = File::Flock::Tiny->write_pid($pidfile);
+    my $piddir  = $ENV{APP_BASE_DAEMON_PIDDIR} || '/var/run';
+    my $pidfile = path($piddir)->child("$class.pid");
+    my $lock    = File::Flock::Tiny->write_pid("$pidfile");
     die "Couldn't lock pid file, probably $class is already running" unless $lock;
 
     return $self->$orig(@_);

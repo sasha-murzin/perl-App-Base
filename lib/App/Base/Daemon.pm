@@ -63,12 +63,6 @@ Rather than double-forking and detaching from the console, the daemon
 runs in the foreground (parent) process. Useful for debugging or 
 interactive invocations.
 
-=head2 --console
-
-Logs output to the console. Typically this is not done, as the daemon
-runs in the background and output to the console would be intermingled
-with the rest of a console session. Useful in conjunction with --no-fork.
-
 =head2 --pid-file
 
 Writes PID of the daemon into specified file, by default writes pid into /var/run/__PACKAGE__.pid
@@ -185,10 +179,6 @@ around 'base_options' => sub {
     return [
         @{$self->$orig},
         App::Base::Script::Option->new(
-            name          => 'console',
-            documentation => "Log to console as well as syslog",
-        ),
-        App::Base::Script::Option->new(
             name          => 'no-fork',
             documentation => "Do not detach and run in the background",
         ),
@@ -217,12 +207,6 @@ around 'BUILDARGS' => sub {
     my $self = shift;
 
     my $args = $self->$orig(@_);
-    if ($args->{_option_values}->{console}) {
-        $args->{_do_console_logging} = 1;
-        $args->{option_values}->{'no-fork'} = 1;
-    } else {
-        $args->{_do_console_logging} = 0;
-    }
 
     return $args;
 };
@@ -393,20 +377,9 @@ __END__
 
  (See App::Base::Script::Common::new)
 
-=head2 Logging methods
-
- (See App::Base::Script::Common, "Logging methods")
-
- Note that unlike App::Base::Script::Common, output is only logged to the console
- if --console is specified (see "BUILT-IN OPTIONS" below).
-
 =head2 Options handling
 
  (See App::Base::Script::Common, "Options handling")
-
-=head1 BUILT-IN OPTIONS (in addition to those provided by App::Base::Script::Common)
-
- --console            Output to console in addition to syslog.
 
 =head1 BUGS
 

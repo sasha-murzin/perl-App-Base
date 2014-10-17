@@ -18,7 +18,7 @@ App::Base::Daemon classes, including:
 ## no critic (RequireArgUnpacking)
 
 use App::Base::Script::Option;
-use Log::Log4perl;
+use Log::Log4perl qw(:nowarn);
 
 use Cwd qw( abs_path );
 use Carp qw( croak );
@@ -86,8 +86,7 @@ requires 'error';
 Concrete subclasses can specify their own options list by defining
 a method called options() which returns an arrayref of
 App::Base::Script::Option objects. Alternatively, your script/daemon
-can simply get by with the standard --help/quiet/verbose/whatever
-options provided by its role.
+can simply get by with the standard --help option provided by its role.
 
 =cut
 
@@ -144,27 +143,21 @@ has 'script_name' => (
     default => sub { File::Basename::basename($0); },
 );
 
-=head2 _do_console_logging
-
-For internal use only. Determines whether to log messages to the console
-when syslog-only logging would normally be the correct behavior.
-
-=cut
-
-has '_do_console_logging' => (
-    is      => 'rw',
-    isa     => 'Bool',
-    default => 1,
-);
-
 has logger => (
     is      => 'ro',
     lazy    => 1,
-    builder => 'build_logger'
+    builder => '_build_logger',
+    handles => {
+        debug   => 'debug',
+        info    => 'info',
+        warn    => 'warn',
+        notice  => 'info',
+        warning => 'warn',
+    },
 );
 
-sub build_logger {
-    return Log::Log4perl::get_logger;
+sub _build_logger {
+    return Log::Log4perl::get_logger();
 }
 
 =head1 METHODS
@@ -185,13 +178,15 @@ sub BUILDARGS {
     $ENV{APP_BASE_SCRIPT_EXE} = abs_path($0);
     $arg_ref->{orig_args} = [@ARGV];
 
-    my $results = $class->_parse_arguments(\@ARGV);
-    if ($results->{parse_result}) {
+    my $results = $class->_parse_arguments( \@ARGV );
+    if ( $results->{parse_result} ) {
         $arg_ref->{_option_values} = $results->{option_values};
         $arg_ref->{parsed_args}    = $results->{parsed_args};
+
         # This exits.
-        $class->usage(0) if ($results->{option_values}->{'help'});
-    } else {
+        $class->usage(0) if ( $results->{option_values}->{'help'} );
+    }
+    else {
         # This exits.
         $class->usage(1);
     }
@@ -207,7 +202,7 @@ Returns the composition of options() and base_options().
 
 sub all_options {
     my $self = shift;
-    return [@{$self->options}, @{$self->base_options}];
+    return [ @{ $self->options }, @{ $self->base_options } ];
 }
 
 =head2 base_options
@@ -223,14 +218,6 @@ sub base_options {
             name          => 'help',
             documentation => 'Show this help information',
         ),
-        App::Base::Script::Option->new(
-            name          => 'quiet',
-            documentation => 'Do not print debugging or informational messages',
-        ),
-        App::Base::Script::Option->new(
-            name          => 'verbose',
-            documentation => 'Be very verbose with information and debugging messages',
-        ),
     ];
 }
 
@@ -242,7 +229,7 @@ Computes the maximum width of any of the switch (option) names.
 
 sub switch_name_width {
     my $self = shift;
-    return max(map { length($_->display_name) } @{$self->all_options});
+    return max( map { length( $_->display_name ) } @{ $self->all_options } );
 }
 
 =head2 switches
@@ -257,17 +244,14 @@ sub switches {
     my $col_width = $ENV{COLUMNS} || 76;
 
     my $max_option_length = $self->switch_name_width;
-    my $sw                = '[' x ($max_option_length + 2);
-    my $doc               = '[' x ($col_width - $max_option_length - 1);
+    my $sw                = '[' x ( $max_option_length + 2 );
+    my $doc               = '[' x ( $col_width - $max_option_length - 1 );
 
     my @lines = map {
         form { break => break_wrap }, "$sw $doc", '--' . $_->display_name, $_->show_documentation;
-      } (
-        sort {
-            $a->name cmp $b->name
-          } (@{$self->all_options}));
+    } ( sort { $a->name cmp $b->name } ( @{ $self->all_options } ) );
 
-    return join('', @lines);
+    return join( '', @lines );
 }
 
 =head2 cli_template
@@ -281,7 +265,7 @@ Defaults to "(program name) [options]", which is pretty standard Unix.
 
 sub cli_template {
     return "$0 [options] ";    # Override this if your script has a more complex command-line
-                               # invocation template such as "$0[options] company_id [list1 [, list2 [, ...]]] "
+        # invocation template such as "$0[options] company_id [list1 [, list2 [, ...]]] "
 }
 
 =head2 usage
@@ -298,7 +282,13 @@ sub usage {
 
     my $format = '[' x $col_width;
 
-    my $message = join('', "\n", form({break => break_wrap}, $format, ["Usage: " . $self->cli_template, split(/[\r\n]/, $self->documentation)]));
+    my $message = join(
+        '', "\n",
+        form(
+            { break => break_wrap },
+            $format, [ "Usage: " . $self->cli_template, split( /[\r\n]/, $self->documentation ) ]
+        )
+    );
 
     $message .= "\nOptions:\n\n";
 
@@ -306,7 +296,7 @@ sub usage {
 
     print STDERR $message;
 
-    return $log_error ? $self->error($message) : (exit 1);
+    return $log_error ? $self->error($message) : ( exit 1 );
 
 }
 
@@ -323,9 +313,10 @@ sub getOption {
     my $self   = shift;
     my $option = shift;
 
-    if (exists($self->_option_values->{$option})) {
+    if ( exists( $self->_option_values->{$option} ) ) {
         return $self->_option_values->{$option};
-    } else {
+    }
+    else {
         croak "Unknown option $option";
     }
 
@@ -339,14 +330,6 @@ Runs the script, returning the return value of __run
 
 sub run {
     my $self      = shift;
-    my $log_level = 'WARN';
-    $log_level = 'ERROR' if $self->getOption("quiet");
-    $log_level = 'DEBUG' if $self->getOption("verbose");
-
-    # For smooth output of console-logged messages
-    STDERR->autoflush(1) if ($self->has_tty);
-    BOM::Utility::Log4perl::set_console_config($log_level)
-      if $self->_do_console_logging;
 
     # This is implemented by subclasses of App::Base::Script::Common
     $self->__run;
@@ -370,84 +353,36 @@ sub _parse_arguments {
     local @ARGV = (@$args);
 
     # Build the hash of options to pass to Getopt::Long
-    my $options      = [@{$self->base_options}, @{$self->options}];
+    my $options      = [ @{ $self->base_options }, @{ $self->options } ];
     my %options_hash = ();
     my %getopt_args  = ();
 
     foreach my $option (@$options) {
         my $id   = $option->name;
         my $type = $option->option_type;
-        if ($type eq 'string') {
+        if ( $type eq 'string' ) {
             $id .= '=s';
-        } elsif ($type eq 'integer') {
+        }
+        elsif ( $type eq 'integer' ) {
             $id .= '=i';
-        } elsif ($type eq 'float') {
+        }
+        elsif ( $type eq 'float' ) {
             $id .= '=f';
         }
 
         my $scalar = $option->default;
-        $getopt_args{$option->name} = \$scalar;
+        $getopt_args{ $option->name } = \$scalar;
         $options_hash{$id} = \$scalar;
     }
 
     my $result = GetOptions(%options_hash);
-    my %option_values = map { $_ => ${$getopt_args{$_}} } (keys %getopt_args);
+    my %option_values = map { $_ => ${ $getopt_args{$_} } } ( keys %getopt_args );
     return {
         parse_result  => $result,
         option_values => \%option_values,
         parsed_args   => \@ARGV
     };
 
-}
-
-=head2 debug
-
-Formats its arguments and outputs them to STDOUT and/or syslog at logging level DEBUG.
-
-=cut
-
-sub debug {
-    my $self = shift;
-    return $self->logger->debug(join " ", @_);
-}
-
-=head2 info
-
-Formats its arguments and outputs them to STDOUT and/or syslog at logging level INFO.
-
-=cut
-
-sub info {
-    my $self = shift;
-    return $self->logger->info(join " ", @_);
-}
-
-=head2 notice
-
-Formats its arguments and outputs them to STDOUT and/or syslog at logging level NOTICE.
-
-=cut
-
-sub notice {
-    my $self = shift;
-    return $self->info(@_);
-}
-
-=head2 warning
-
-Formats its arguments and outputs them to STDOUT and/or syslog at logging level WARN.
-
-=cut
-
-sub warning {
-    my $self = shift;
-    return $self->logger->warn(join " ", @_);
-}
-
-## no critic
-sub warn {
-    my $self = shift;
-    $self->warning(@_);
 }
 
 =head2 __error
@@ -459,7 +394,7 @@ SUBCLASS METHODS), then exits.
 
 sub __error {
     my $self = shift;
-    $self->logger->error(join " ", @_);
+    $self->logger->error( join " ", @_ );
     exit(-1);
 }
 
@@ -490,23 +425,17 @@ more information.
 
 =head2 Logging methods
 
-- debug( @message ) - If --verbose is specified, prints a log line containing
-@message to STDERR
+Role implements the following methods for logging
 
-- info( @message ) - If --quiet is not specified, prints a log line containing
-@message to STDERR. NOTE: If the script is running without a controlling tty
-(e.g., in a crontab), info() messages WILL NOT be printed to STDERR unless
---opt-verbose is specified. However, while connected to a tty, info() messages
-will be printed to STDERR.
+=over 4
 
-- notice( @message ) - If --quiet is not specified, prints a log line containing
-@message to STDERR
+=item B<debug>
 
-- warning( @message ) - Prints a log line containing @message to STDERR.
+=item B<info>
 
-- error( @message ) - Depends on the subclass' (or role's) implementation
-of error(), but usually it results in the program terminating and appropriate
-messages being logged somewhere.
+=item B<warn>
+
+=item B<error> - note, that this also terminates the process
 
 =head2 Options handling
 
@@ -543,21 +472,6 @@ And $foo will be resolved as follows:
 =head2 --help
 
 Print a usage statement
-
-=head2 --log-facility=<f>
-
-Use symbolic syslog facility <f> (default: 'local1'). See Sys::Syslog
-for a list of known log facilities.
-
-=head2 --quiet
-
-Only print warning() and error() statements to STDERR. In other words,
-do not print info() and notice() statements.
-
-=head2 --verbose
-
-Print debug() statements to STDERR, in addition to messages of all
-other severity levels.
 
 =head1 BUGS
 
