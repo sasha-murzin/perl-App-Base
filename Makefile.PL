@@ -24,8 +24,9 @@ WriteMakefile(
         'Try::Tiny'            => 0,
     },
     TEST_REQUIRES => {
-        'Test::More'       => 0.94,
         'File::Slurp'      => 0,
+        'Test::Exit'       => 0,
+        'Test::More'       => 0.94,
         'Test::Most'       => 0.21,
         'Test::NoWarnings' => 0,
         'Text::Trim'       => 0,
