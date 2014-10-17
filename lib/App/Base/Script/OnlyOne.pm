@@ -26,7 +26,7 @@ around script_run => sub {
     my $self = shift;
 
     my $class   = ref $self;
-    my $piddir  = $ENV{APP_BASE_DAEMON_PIDDIR} || Path::Class::Dir->new('', 'var', 'run', 'bom-daemon');
+    my $piddir  = $ENV{APP_BASE_DAEMON_PIDDIR} || Path::Class::Dir->new('', 'var', 'run');
     my $pidfile = Path::Class::File->new($piddir, "$class.pid");
     my $lock    = File::Flock::Tiny->write_pid($pidfile);
     die "Couldn't lock pid file, probably $class is already running" unless $lock;

@@ -166,7 +166,7 @@ sub _build_pid_file {
     my $file = $self->getOption('pid-file');
     unless ($file) {
         my $class = ref $self;
-        my $piddir = $ENV{APP_BASE_DAEMON_PIDDIR} || '/var/run/bom-daemon';
+        my $piddir = $ENV{APP_BASE_DAEMON_PIDDIR} || '/var/run';
         $file = path($piddir)->child("$class.pid");
     }
     return "$file";
