@@ -26,6 +26,30 @@ This document describes App::Base version 0.01
 
 __END__
 
+=head1 CONTRIBUTORS
+
+The following people contributed to this module:
+
+=over 4
+
+=item Calum Halcrow
+
+=item Chris Travers
+
+=item Jean-Yves Sireau
+
+=item Kaveh Mousavi Zamani
+
+=item Matt Miller
+
+=item Nick Marden
+
+=item Pavel Shaydo
+
+=item Tee Shuwn Yuan
+
+=back
+
 =head1 LICENSE AND COPYRIGHT
 
 Copyright (C) 2010-2014 Binary.com

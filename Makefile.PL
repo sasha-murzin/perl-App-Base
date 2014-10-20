@@ -41,5 +41,15 @@ WriteMakefile(
             repository => 'git://github.com/binary-com/perl-App-Base',
             license    => 'http://dev.perl.org/licenses/',
         },
+        x_contributors => [
+            'Calum Halcrow',
+            'Chris Travers',
+            'Jean-Yves Sireau',
+            'Kaveh Mousavi Zamani',
+            'Matt Miller',
+            'Nick Marden',
+            'Pavel Shaydo <zwon@cpan.org>',
+            'Tee Shuwn Yuan',
+        ],
     },
 );
