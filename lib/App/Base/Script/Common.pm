@@ -3,29 +3,25 @@ use Moose::Role;
 
 =head1 NAME
 
-App::Base::Script::Common - Behaviors that are common to App::Base::Script and App::Base::Daemon
+App::Base::Script::Common - Behaviors common to App::Base::Script and App::Base::Daemon
 
 =head1 DESCRIPTION
 
-App::Base::Script::Common provides infrastructure that to the App::Base::Script and 
-App::Base::Daemon classes, including:
-
-- Standardized option parsing
-- Standardized logging
+App::Base::Script::Common provides infrastructure that is common to the
+App::Base::Script and App::Base::Daemon classes, including options parsing and
+logging methods.
 
 =cut
-
-## no critic (RequireArgUnpacking)
 
 use App::Base::Script::Option;
 use Log::Log4perl qw(:nowarn);
 
 use Cwd qw( abs_path );
 use Carp qw( croak );
-use File::Basename qw( basename );
 use Getopt::Long;
 use IO::Handle;
 use List::Util qw( max );
+use Path::Tiny;
 use POSIX qw( strftime );
 use Text::Reform qw( form break_wrap );
 use Try::Tiny;
@@ -131,8 +127,15 @@ The name of the running script, computed from $0 and used for logging.
 
 has 'script_name' => (
     is      => 'ro',
-    default => sub { File::Basename::basename($0); },
+    default => sub { path($0)->basename; },
 );
+
+=head2 logger
+
+Logger object used for logging. Should implement debug, info, warn and error
+methods. By default L<Log::Log4perl> is used.
+
+=cut
 
 has logger => (
     is      => 'ro',
@@ -331,9 +334,21 @@ sub run {
 
 Parses the arguments in @ARGV, returning a hashref containing:
 
-- The parsed arguments (that is, those that should remain in @ARGV)
-- The option values, as a hashref, including default values
-- Whether the parsing encountered any errors
+=over 4
+
+=item -
+
+The parsed arguments (that is, those that should remain in @ARGV)
+
+=item -
+
+The option values, as a hashref, including default values
+
+=item -
+
+Whether the parsing encountered any errors
+
+=back
 
 =cut
 
@@ -397,22 +412,30 @@ __END__
 
 Invocation of a App::Base::Script::Common-based program is accomplished as follows:
 
-- Define a class that derives (via 'use Moose' and 'with') from App::Base::Script::Common
+=over 4
 
-- Instantiate an object of that class via new( )
+=item -
 
-- Run the program by calling run( ). The return value of run( ) is the exit
+Define a class that derives (via 'use Moose' and 'with') from App::Base::Script::Common
+
+=item -
+
+Instantiate an object of that class via new( )
+
+=item -
+
+Run the program by calling run( ). The return value of run( ) is the exit
 status of the script, and should typically be passed back to the calling
 program via exit()
+
+=back
 
 =head2 The new() method
 
 A Moose-style constructor for the App::Base::Script::Common-derived class.
-Every such class has one important attribute:
-
-- options: an array ref of App::Base::Script::Option objects to be added to the
-command-line processing for the script. See App::Base::Script::Option for
-more information.
+Every such class has one important attribute: options -- an array ref of
+App::Base::Script::Option objects to be added to the command-line processing
+for the script. See App::Base::Script::Option for more information.
 
 =head2 Logging methods
 
@@ -434,29 +457,49 @@ One of the most useful parts of App::Base::Script::Common is the simplified acce
 options processing. The getOption() method allows your script to determine the
 value of a given option, determined as follows:
 
-1) If given as a command line option (registered via options hashref)
-2) The default value specified in the App::Base::Script::Option object that
+=over 4
+
+=item 1
+
+If given as a command line option (registered via options hashref)
+
+=item 2
+
+The default value specified in the App::Base::Script::Option object that
 was passed to the options() attribute at construction time.
+
+=back
 
 For example, if your script registers an option 'foo' by saying
 
-  my $object = MyScript->new( options => [
-    App::Base::Script::Option->new(
-      name => "foo",
-      documentation => "The foo option",
-      option_type => "integer",
-      default => 7,
-    ),
-  ]);
+    my $object = MyScript->new(
+        options => [
+            App::Base::Script::Option->new(
+                name          => "foo",
+                documentation => "The foo option",
+                option_type   => "integer",
+                default       => 7,
+            ),
+        ]
+    );
 
 Then in script_run() you can say
 
-  my $foo = $self->getOption("foo")
+    my $foo = $self->getOption("foo")
 
-And $foo will be resolved as follows:
+And C<$foo> will be resolved as follows:
 
-1) A --foo value specified as a command-line switch
-2) The default value specified at registration time ("bar")
+=over 4
+
+=item 1
+
+A --foo value specified as a command-line switch
+
+=item 2
+
+The default value specified at registration time ("bar")
+
+=back
 
 =head1 BUILT-IN OPTIONS
 
@@ -464,12 +507,14 @@ And $foo will be resolved as follows:
 
 Print a usage statement
 
-=head1 BUGS
+=head1 LICENSE AND COPYRIGHT
 
-No known bugs.
+Copyright (C) 2010-2014 Binary.com
 
-=head1 MAINTAINER
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
 
-Nick Marden, <nick@regentmarkets.com>
+See http://dev.perl.org/licenses/ for more information.
 
 =cut

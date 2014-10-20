@@ -6,13 +6,15 @@ App::Base::Script::Option - OO interface for command-line options
 
 =head1 SYNOPSIS
 
- my $option = App::Base::Script::Option->new({
-      name          => 'foo',
-      display       => '--foo=<f>'
-      documentation => 'Controls the foo behavior of my script. If <f> is higher than 5, the script erases everything in /dev.',
-      default       => 4,
-      option_type   => 'integer',
- });
+    my $option = App::Base::Script::Option->new(
+        {
+            name          => 'foo',
+            display       => '--foo=<f>',
+            documentation => 'Controls the foo behavior of my script.',
+            default       => 4,
+            option_type   => 'integer',
+        }
+    );
 
 =head1 DESCRIPTION
 
@@ -22,12 +24,19 @@ line options. Typically an object of this class will be
 constructed anonymously as part of the anonymous arrayref
 return value of the options() method:
 
- sub options {
-     return [
-         App::Base::Script::Option->new( name => 'foo', documentation => 'The foo option', option_type => 'integer' ),
-         App::Base::Script::Option->new( name => 'bar', documentation => 'The bar option'),
-    ];
- }
+    sub options {
+        return [
+            App::Base::Script::Option->new(
+                name          => 'foo',
+                documentation => 'The foo option',
+                option_type   => 'integer',
+            ),
+            App::Base::Script::Option->new(
+                name          => 'bar',
+                documentation => 'The bar option',
+            ),
+        ];
+    }
 
 =head1 ATTRIBUTES
 
@@ -63,7 +72,7 @@ One of: 'integer', 'float', 'string', or 'switch'.
 
 The content of an option field is verified against the provided value
 during option parsing. For example, --foo=Fred will cause a failure
-if the 'foo' option was declared to have option_type = 'integer'.
+if the 'foo' option was declared to have option_type 'integer'.
 
 =cut
 
@@ -126,12 +135,14 @@ __PACKAGE__->meta->make_immutable;
 
 __END__
 
-=head1 BUGS
+=head1 LICENSE AND COPYRIGHT
 
-No known bugs.
+Copyright (C) 2010-2014 Binary.com
 
-=head1 MAINTAINER
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
 
-Nick Marden, <nick@regentmarkets.com>
+See http://dev.perl.org/licenses/ for more information.
 
 =cut

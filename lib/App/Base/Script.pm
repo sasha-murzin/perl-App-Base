@@ -9,37 +9,34 @@ App::Base::Script - A truly lazy person's tool for writing self-documenting, sel
 
 =head1 SYNOPSIS
 
-  package MyScript;
+    package MyScript;
 
-  use Moose;
-  with 'App::Base::Script';
+    use Moose;
+    with 'App::Base::Script';
 
-  sub documentation { return 'This is a script.'; }
+    sub documentation { return 'This is a script.'; }
 
-  sub script_run {
-      my $self = shift;
-      $self->info( "Hello, world" );
-      return 0;
-  }
+    sub script_run {
+        my $self = shift;
+        $self->info("Hello, world");
+        return 0;
+    }
 
-  no Moose;
-  __PACKAGE__->meta->make_immutable;
+    no Moose;
+    __PACKAGE__->meta->make_immutable;
 
-  package main;
+    package main;
 
-  exit MyScript->new( )->run( );
+    exit MyScript->new()->run();
 
 =head1 DESCRIPTION
 
 App::Base::Script builds on App::Base::Script::Common and provides common infrastructure that is
-useful to many scripts that would be needed at RMG, including:
-
-- Standardized log formatting
-- Maps built-in logging methods to syslog(3) facility
+useful for writing scripts.
 
 =head1 REQUIRED SUBCLASS METHODS
 
-See also, App::Base::Script::Common "REQUIRED METHODS"
+See also, L<App::Base::Script::Common> "REQUIRED METHODS"
 
 =cut
 
@@ -58,18 +55,11 @@ is returned as the return value of run().
 
 requires 'script_run';
 
-around 'base_options' => sub {
-    my $orig = shift;
-    my $self = shift;
-    # Additional automatic arguments can be added here
-    return [@{$self->$orig},];
-};
-
 =head1 METHODS
 
-=head2 __run
+=head2 The new() method
 
-Implements the main run() loop of a App::Base::Script.
+(See App::Base::Script::Common::new)
 
 =cut
 
@@ -108,28 +98,36 @@ __END__
 
 Invocation of a App::Base::Script-based script is accomplished as follows:
 
-- Define a class that implements the App::Base::Script interface (using 'with App::Base::Script')
+=over 4
 
-- Instantiate an object of that class via new()
+=item -
 
-- Run the script by calling run(). The return value of run() is the exit
+Define a class that implements the App::Base::Script interface (using 'with App::Base::Script')
+
+=item -
+
+Instantiate an object of that class via new()
+
+=item -
+
+Run the script by calling run(). The return value of run() is the exit
 status of the script, and should typically be passed back to the calling
 program via exit()
 
-=head2 The new() method
-
-(See App::Base::Script::Common::new)
+=back
 
 =head2 Options handling
 
 (See App::Base::Script::Common, "Options handling")
 
-=head1 BUGS
+=head1 LICENSE AND COPYRIGHT
 
-No known bugs.
+Copyright (C) 2010-2014 Binary.com
 
-=head1 MAINTAINER
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
 
-Nick Marden, <nick@regentmarkets.com>
+See http://dev.perl.org/licenses/ for more information.
 
 =cut
