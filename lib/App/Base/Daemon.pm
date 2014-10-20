@@ -1,8 +1,5 @@
 package App::Base::Daemon;
 
-# Because perlcritic can't tell its ass from its elbow.
-## no critic (RequireArgUnpacking,RequireLocalizedPunctuationVars)
-
 =head1 NAME
 
 App::Base::Daemon - A lazy person's tool for writing self-documenting, self-monitoring daemons
@@ -14,28 +11,25 @@ App::Base::Daemon - A lazy person's tool for writing self-documenting, self-moni
     with 'App::Base::Daemon';
     sub documentation { return 'This is an example daemon.'; }
 
-    sub options
-    {
-      # See App::Base::Script::Common
+    sub options {
+
+        # See App::Base::Script::Common
     }
 
-    sub daemon_run
-    {
-      my $self = shift;
-      while (1)
-      {
-          $self->info('The foo option is', $self->getOption('foo'));
-          sleep(1)
-      }
+    sub daemon_run {
+        my $self = shift;
+        while (1) {
+            $self->info( 'The foo option is', $self->getOption('foo') );
+            sleep(1)
+        }
 
-      return 0;    # This will never be reached
+        return 0;    # This will never be reached
     }
 
-    sub handle_shutdown
-    {
-      my $self = shift;
-      $self->warning("I am shutting down now");
-      return 0;
+    sub handle_shutdown {
+        my $self = shift;
+        $self->warning("I am shutting down now");
+        return 0;
     }
 
     no Moose;
@@ -46,11 +40,19 @@ App::Base::Daemon - A lazy person's tool for writing self-documenting, self-moni
 
 =head1 DESCRIPTION
 
-App::Base::Daemon builds on App::Base::Script::Common and provides common infrastructure that is
-useful to many daemons that would be needed at RMG, including:
+App::Base::Daemon builds on App::Base::Script::Common and provides common infrastructure for writing daemons, including:
 
- - Standardized logging techniques via syslog
- - Signal processing and graceful shutdown
+=over 4
+
+=item -
+
+Standardized logging techniques via syslog
+
+=item -
+
+Signal processing and graceful shutdown
+
+=back
 
 =head1 BUILT-IN OPTIONS
 
@@ -84,9 +86,8 @@ use Path::Tiny;
 
 =head2 daemon_run
 
-The main loop that runs the daemon. Typically this will include while(1) or something similar.
-
-Although the main loop may exit via a shutdown signal (see below), this method should never return and its return value, if any, will be ignored.
+The main loop that runs the daemon. Typically this will include while(1) or
+something similar.  If this method returns, daemon exits.
 
 =cut
 
@@ -94,9 +95,9 @@ requires 'daemon_run';
 
 =head2 handle_shutdown
 
-Called before the daemon shuts down in response to a shutdown signal. Should clean up any resources in use by the daemon.
-
-The return value of handle_shutdown is used as the exit status of the daemon.
+Called before the daemon shuts down in response to a shutdown signal. Should
+clean up any resources in use by the daemon. The return value of
+handle_shutdown is used as the exit status of the daemon.
 
 =cut
 
@@ -105,9 +106,6 @@ requires 'handle_shutdown';
 use Socket;
 use IO::Handle;
 use File::Flock::Tiny;
-use Path::Class::File qw();
-use Log::Log4perl;
-
 use POSIX qw();
 
 =head1 ATTRIBUTES
@@ -202,20 +200,7 @@ around 'base_options' => sub {
     ];
 };
 
-around 'BUILDARGS' => sub {
-    my $orig = shift;
-    my $self = shift;
-
-    my $args = $self->$orig(@_);
-
-    return $args;
-};
-
 =head1 METHODS
-
-=head2 _signal_shutdown
-
-The actual %SIG entry that intercepts the signals listed in shutdown_signals()
 
 =cut
 
@@ -226,13 +211,6 @@ sub _signal_shutdown {
     $self->handle_shutdown;
     exit 0;
 }
-
-=head2 __run
-
-Starts syslogging, registers signal handlers, and returns the result of 
-the subclass' implementation of daemon_run
-
-=cut
 
 sub __run {
     my $self = shift;
@@ -339,17 +317,15 @@ sub _set_user_and_group {
 
 =head2 error
 
-Handles the output of errors, including shutting down the running daemon by calling handle_shutdown(). 
-
-If you have a serious problem that should NOT result in shutting down your daemon, use warn() instead.
+Handles the output of errors, including shutting down the running daemon by
+calling handle_shutdown().  If you have a serious problem that should NOT
+result in shutting down your daemon, use warn() instead.
 
 =cut
 
 sub error {
     my $self = shift;
-    ## no critic (Subroutines::RequireArgUnpacking)
     $self->logger->error("Shutting down: " . join(' ', @_));
-    ## use critic
 
     $self->handle_shutdown();
     return exit(-1);
@@ -363,32 +339,42 @@ __END__
 
 =head2 Inheritance
 
- Invocation of a App::Base::Daemon-based daemon is accomplished as follows:
+Invocation of a App::Base::Daemon-based daemon is accomplished as follows:
 
- - Define a class that implements App::Base::Daemon
+=over 4
 
- - Instantiate an object of that class via new()
+=item -
 
- - Run the daemon by calling run(). The return value of run() is the exit
- status of the daemon, and should typically be passed back to the calling
- program via exit()
+Define a class that implements App::Base::Daemon
+
+=item -
+
+Instantiate an object of that class via new()
+
+=item -
+
+Run the daemon by calling run(). The return value of run() is the exit
+status of the daemon, and should typically be passed back to the calling
+program via exit()
+
+=back
 
 =head2 The new() method
 
- (See App::Base::Script::Common::new)
+(See App::Base::Script::Common::new)
 
 =head2 Options handling
 
- (See App::Base::Script::Common, "Options handling")
+(See App::Base::Script::Common, "Options handling")
 
-=head1 BUGS
+=head1 LICENSE AND COPYRIGHT
 
-  No known bugs.
+Copyright (C) 2010-2014 Binary.com
 
-=head1 MAINTAINER
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
 
-  Nick Marden, <nick@regentmarkets.com>
+See http://dev.perl.org/licenses/ for more information.
 
 =cut
-
-1;

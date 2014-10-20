@@ -2,7 +2,7 @@ package App::Base::Daemon::Supervisor;
 
 =head1 NAME
 
-App::Base::Daemon::Supervisor
+App::Base::Daemon::Supervisor - supervise daemon process
 
 =head1 SYNOPSIS
 
@@ -28,7 +28,8 @@ App::Base::Daemon::Supervisor
 =head1 DESCRIPTION
 
 App::Base::Daemon::Supervisor allows to run code under supervision. It forks child
-process and restarts it if it exits. It also supports zero downtime reloading.
+process and restarts it if it exits. It also provides support for zero downtime
+reloading.
 
 =cut
 
@@ -45,15 +46,15 @@ use Try::Tiny;
 
 =head1 REQUIRED METHODS
 
-Class consuming this role must implement following methods:
+Class consuming this role must implement the following methods:
 
 =cut
 
 =head2 supervised_process
 
 The main daemon subroutine. Inside this subroutine you should periodically
-check that supervisor is still alive. If supervisor exited, daemon should also
-exit.
+check that supervisor is still alive using I<ping_supervisor> method. If
+supervisor exited, daemon should also exit.
 
 =cut
 
@@ -95,11 +96,18 @@ has delay_before_respawn => (
     default => 5,
 );
 
+=head2 supervisor_pipe
+
+File descriptor of the pipe to supervisor
+
+=cut
+
 has supervisor_pipe => (
     is     => 'rw',
     writer => '_supervisor_pipe',
 );
-has _child_pid => (is => 'rw');
+
+has _child_pid => ( is => 'rw' );
 
 =head1 METHODS
 
@@ -117,7 +125,7 @@ sub ping_supervisor {
     my $pipe = $self->supervisor_pipe or $self->error("Supervisor pipe is not defined");
     say $pipe "ping";
     my $pong = <$pipe>;
-    unless (defined $pong) {
+    unless ( defined $pong ) {
         $self->error("Error reading from supervisor pipe: $!");
     }
     return;
@@ -125,7 +133,7 @@ sub ping_supervisor {
 
 =head2 $self->ready_to_take_over
 
-Used to support host restart. If daemon support hot restart,
+Used to support hot reloading. If daemon support hot restart,
 I<supervised_process> is called while the old daemon is still running.
 I<supervised_process> should perform initialization, e.g. open listening
 sockets, and then call this method. Method will cause termination of old daemon
@@ -168,25 +176,30 @@ sub daemon_run {
             $self->_supervisor_pipe($par);
             while (<$par>) {
                 chomp;
-                if ($_ eq 'ping') {
+                if ( $_ eq 'ping' ) {
                     say $par 'pong';
-                } elsif ($_ eq 'takeover') {
+                }
+                elsif ( $_ eq 'takeover' ) {
                     $self->_control_takeover;
                     say $par 'ok';
-                } elsif ($_ eq 'shutdown') {
+                }
+                elsif ( $_ eq 'shutdown' ) {
                     $self->debug("Worker asked for shutdown");
                     kill KILL => $pid;
                     close $par;
-                } else {
+                }
+                else {
                     $self->warning("Received unknown command from the supervised process: $_");
                 }
             }
             $self->debug("Child closed control connection");
             my $kid = waitpid $pid, 0;
             $self->warning("Supervised process $kid exited with status $?");
-        } elsif (not defined $pid) {
+        }
+        elsif ( not defined $pid ) {
             $self->warning("Couldn't fork: $!");
-        } else {
+        }
+        else {
             local $SIG{USR2};
             $par->close;
             $chld->autoflush(1);
@@ -195,7 +208,7 @@ sub daemon_run {
             $self->supervised_process;
             exit 0;
         }
-        Time::HiRes::usleep(1_000_000 * $self->delay_before_respawn);
+        Time::HiRes::usleep( 1_000_000 * $self->delay_before_respawn );
     }
 
     # for critic
@@ -218,14 +231,15 @@ sub _set_hot_reload_handler {
         }
         $self->warning("Received USR2, initiating hot reload");
         my $pid;
-        unless (defined($pid = fork)) {
+        unless ( defined( $pid = fork ) ) {
             $self->warning("Could not fork, cancelling reload");
         }
         unless ($pid) {
-            exec($ENV{APP_BASE_SCRIPT_EXE}, @{$self->{orig_args}}) or $self->error("Couldn't exec: $!");
+            exec( $ENV{APP_BASE_SCRIPT_EXE}, @{ $self->{orig_args} } )
+              or $self->error("Couldn't exec: $!");
         }
         $upgrading = time;
-        if ($SIG{ALRM}) {
+        if ( $SIG{ALRM} ) {
             $self->warning("ALRM handler is already defined!");
         }
         $SIG{ALRM} = sub {
@@ -236,9 +250,9 @@ sub _set_hot_reload_handler {
         alarm 60;
     };
     {
-        my $usr2 = POSIX::SigSet->new(POSIX::SIGUSR2());
+        my $usr2 = POSIX::SigSet->new( POSIX::SIGUSR2() );
         my $old  = POSIX::SigSet->new();
-        POSIX::sigprocmask(POSIX::SIG_UNBLOCK(), $usr2, $old);
+        POSIX::sigprocmask( POSIX::SIG_UNBLOCK(), $usr2, $old );
     }
     $self->debug("Set handler for USR2");
 
@@ -254,33 +268,41 @@ sub _control_takeover {
     ## no critic (RequireLocalizedPunctuationVars)
 
     # if it is first generation, when pid file should be already locked in App::Base::Daemon
-    if ($ENV{APP_BASE_DAEMON_GEN} > 1 and $ENV{APP_BASE_DAEMON_PID} != $$) {
+    if ( $ENV{APP_BASE_DAEMON_GEN} > 1 and $ENV{APP_BASE_DAEMON_PID} != $$ ) {
         kill QUIT => $ENV{APP_BASE_DAEMON_PID};
-        if ($self->getOption('no-pid-file')) {
+        if ( $self->getOption('no-pid-file') ) {
+
             # we don't have pid file, so let's just poke it to death
             my $attempts = 14;
-            while (kill(($attempts == 1 ? 'KILL' : 'ZERO') => $ENV{APP_BASE_DAEMON_PID}) and $attempts--) {
+            while ( kill( ( $attempts == 1 ? 'KILL' : 'ZERO' ) => $ENV{APP_BASE_DAEMON_PID} )
+                and $attempts-- )
+            {
                 Time::HiRes::usleep(500_000);
             }
-        } else {
-            local $SIG{ALRM} = sub { $self->warn("Couldn't lock the file. Sending KILL to previous generation process"); };
+        }
+        else {
+            local $SIG{ALRM} = sub {
+                $self->warn("Couldn't lock the file. Sending KILL to previous generation process");
+            };
             alarm 5;
+
             # We may fail because two reasons:
             # a) previous process didn't exit and still holds the lock
             # b) new process was started and locked pid
-            $pid = try { File::Flock::Tiny->lock($self->pid_file) };
+            $pid = try { File::Flock::Tiny->lock( $self->pid_file ) };
             unless ($pid) {
+
                 # So let's try killing old process, if after that locking still will fail
                 # then probably it is the case b) and we should exit
                 kill KILL => $ENV{APP_BASE_DAEMON_PID};
                 $SIG{ALRM} = sub { $self->error("Still couldn't lock pid file, aborting") };
                 alarm 5;
-                $pid = File::Flock::Tiny->lock($self->pid_file);
+                $pid = File::Flock::Tiny->lock( $self->pid_file );
             }
             alarm 0;
             $pid->write_pid;
         }
-        $self->info("Process $$, is generation $ENV{APP_BASE_DAEMON_GEN} of " . ref $self);
+        $self->info( "Process $$, is generation $ENV{APP_BASE_DAEMON_GEN} of " . ref $self );
     }
     $ENV{APP_BASE_DAEMON_PID} = $$;
     return;
@@ -294,9 +316,10 @@ See L<App::Base::Daemon>
 
 sub handle_shutdown {
     my $self = shift;
-    if ($self->is_supervisor) {
+    if ( $self->is_supervisor ) {
         kill TERM => $self->_child_pid if $self->_child_pid;
-    } else {
+    }
+    else {
         $self->supervised_shutdown;
     }
 
@@ -310,3 +333,17 @@ sub DEMOLISH {
 }
 
 1;
+
+__END__
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) 2010-2014 Binary.com
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+
+=cut
