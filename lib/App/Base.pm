@@ -6,7 +6,7 @@ $VERSION = eval $VERSION;
 
 =head1 NAME
 
-App::Base - Perl extension ...
+App::Base - modules implementing common methods for applications
 
 =head1 VERSION
 
@@ -26,13 +26,9 @@ This document describes App::Base version 0.01
 
 __END__
 
-=head1 AUTHOR
-
-Binary.com C<< <binary at cpan.org> >>
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2014 Binary.com
+Copyright (C) 2010-2014 Binary.com
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
