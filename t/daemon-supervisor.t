@@ -1,5 +1,5 @@
 use Test::Most;
-use File::Temp;
+use Path::Tiny;
 use Time::HiRes qw(usleep);
 use File::Slurp;
 
@@ -30,7 +30,7 @@ use File::Slurp;
 
     sub supervised_process {
         my $self = shift;
-        my $pid_file = Path::Class::File->new($self->tmp_dir, 'pid');
+        my $pid_file = $self->tmp_dir->child('pid');
         write_file($pid_file, $$);
         $self->warning("writing pid into $pid_file");
         while (1) {
@@ -40,12 +40,12 @@ use File::Slurp;
     }
 }
 
-my $tmp_dir = File::Temp->newdir(CLEANUP => 0);
+my $tmp_dir = Path::Tiny->tempdir(CLEANUP => 0);
 
 local $ENV{APP_BASE_DAEMON_PIDDIR} = $tmp_dir;
-my $superpid_file = Path::Class::File->new($tmp_dir, 'Test::Daemon.pid');
-my $pid_file      = Path::Class::File->new($tmp_dir, 'pid');
-my $shutdown_file = Path::Class::File->new($tmp_dir, 'shutdown');
+my $superpid_file = $tmp_dir->child('Test::Daemon.pid');
+my $pid_file      = $tmp_dir->child('pid');
+my $shutdown_file = $tmp_dir->child('shutdown');
 
 note "Test::Daemon should start supervisor process which should start a supervised child";
 is(

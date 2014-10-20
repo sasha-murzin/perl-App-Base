@@ -58,6 +58,7 @@ use Moose;
 with 'App::Base::Daemon';
 
 sub daemon_run {
+
     # This will never actually loop, but I want to guarantee that the
     # daemon does not exit by reaching return()
     while (1) {
@@ -79,49 +80,51 @@ __PACKAGE__->meta->make_immutable;
 
 package main;
 use POSIX qw(SIGTERM);
-use File::Temp;
+use Path::Tiny;
 use File::Slurp;
 
-exits_ok(sub { Test::Daemon->new->error("This is an error message") }, "error() forces exit");
+exits_ok( sub { Test::Daemon->new->error("This is an error message") }, "error() forces exit" );
 
-my $pdir = File::Temp->newdir();
-my $pidfile = Path::Class::File->new($pdir, 'Test::Daemon.pid');
+my $pdir    = Path::Tiny->tempdir;
+my $pidfile = $pdir->child('Test::Daemon.pid');
 
 FORK:
 {
     local $ENV{APP_BASE_DAEMON_PIDDIR} = $pdir;
-    ok(File::Flock::Tiny->trylock($pidfile), "Pidfile is not locked");
-    is(Test::Daemon->new->run, 0, 'Test daemon spawns detached child process');
+    ok( File::Flock::Tiny->trylock($pidfile), "Pidfile is not locked" );
+    is( Test::Daemon->new->run, 0, 'Test daemon spawns detached child process' );
     wait_file($pidfile);
-    ok(-f $pidfile, "Pid file exists");
-    chomp(my $pid = read_file($pidfile));
+    ok( -f $pidfile, "Pid file exists" );
+    chomp( my $pid = read_file($pidfile) );
     ok $pid, "Have read daemon PID";
     BAIL_OUT("No PID file, can't continue") unless $pid;
     ok !File::Flock::Tiny->trylock($pidfile), "Pidfile is locked";
-    ok kill(0 => $pid), "Grandchild process is running";
-    throws_ok { Test::Daemon->new->run } qr/another copy of this daemon already running/, "Can not start second copy";
-    ok kill(INT => $pid), "Able to send SIGINT signal to process";
+    ok kill( 0 => $pid ), "Grandchild process is running";
+    throws_ok { Test::Daemon->new->run } qr/another copy of this daemon already running/,
+      "Can not start second copy";
+    ok kill( INT => $pid ), "Able to send SIGINT signal to process";
     Time::HiRes::usleep(5e5);
-    ok !kill(0 => $pid), "Grandchild process has shut down";
+    ok !kill( 0 => $pid ), "Grandchild process has shut down";
 }
 
 NO_FORK:
 {
-    local @ARGV = ('--no-fork', '--no-pid-file');
-    is(0, Test::Daemon::Exiting->new->run, '--no-fork runs and returns 0');
+    local @ARGV = ( '--no-fork', '--no-pid-file' );
+    is( 0, Test::Daemon::Exiting->new->run, '--no-fork runs and returns 0' );
 }
 
 LE_ROI_SE_MEURT:
 {
-    local @ARGV = ('--no-fork', '--no-pid-file');
-    exits_ok(sub { Test::Daemon::Suicidal->new->run }, "sending SIGTERM to a daemon forces exit");
+    local @ARGV = ( '--no-fork', '--no-pid-file' );
+    exits_ok( sub { Test::Daemon::Suicidal->new->run }, "sending SIGTERM to a daemon forces exit" );
 }
 
-if ($> == 0) {
+if ( $> == 0 ) {
     local $ENV{APP_BASE_DAEMON_PIDDIR} = $pdir;
     unlink $pidfile;
     is(
-        Test::Daemon->new({
+        Test::Daemon->new(
+            {
                 user  => 'nobody',
                 group => 'nogroup',
             },
@@ -131,19 +134,19 @@ if ($> == 0) {
     );
     wait_file($pidfile);
     ok -f $pidfile, "Pid file exists";
-    chomp(my $pid = read_file($pidfile));
+    chomp( my $pid = read_file($pidfile) );
     ok $pid, "Have read daemon PID";
-    chomp(my $ps = `ps hp$pid -ouser,group`);
-    my ($user, $group) = split /\s+/, $ps;
+    chomp( my $ps = `ps hp$pid -ouser,group` );
+    my ( $user, $group ) = split /\s+/, $ps;
     is $user,  'nobody',  "user is nobody";
     is $group, 'nogroup', "group is nogroup";
     kill TERM => $pid;
 }
 
 sub wait_file {
-    my ($file, $timeout) = @_;
+    my ( $file, $timeout ) = @_;
     $timeout //= 1;
-    while ($timeout > 0 and not -f $file) {
+    while ( $timeout > 0 and not -f $file ) {
         Time::HiRes::usleep(2e4);
         $timeout -= 2e4;
     }
