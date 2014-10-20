@@ -18,7 +18,6 @@ WriteMakefile(
         'Moose::Role'          => 0,
         'MooseX::Types'        => 0,
         'namespace::autoclean' => 0,
-        'Path::Class'          => 0,
         'Path::Tiny'           => 0,
         'Text::Reform'         => 0,
         'Try::Tiny'            => 0,
