@@ -32,15 +32,6 @@ use Try::Tiny;
 
 use MooseX::Types::Moose qw( Str Bool );
 
-has 'has_tty' => (
-    is      => 'rw',
-    isa     => Bool,
-    default => sub {
-        my $tty_exit_status = system("tty --silent") / 256;    # info tty for more info
-        $tty_exit_status ? 0 : 1;
-    },
-);
-
 has 'return_value' => (
     is      => 'rw',
     default => 0
