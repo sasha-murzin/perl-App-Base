@@ -27,9 +27,30 @@ App::Base::Daemon::Supervisor - supervise daemon process
 
 =head1 DESCRIPTION
 
-App::Base::Daemon::Supervisor allows to run code under supervision. It forks child
-process and restarts it if it exits. It also provides support for zero downtime
-reloading.
+App::Base::Daemon::Supervisor allows to run code under supervision, it also
+provides support for zero downtime reloading. When you run Supervisor based
+daemon, the first process becomes a supervisor, it forks a child process which
+invokes I<supervised_process> method that should contain the main daemon code.
+Supervisor and worker connected with a socketpair. If the worker exits for some
+reason, the supervisor detects it and starts a new worker after a small delay.
+Worker should periodically call I<ping_supervisor> method, so it would be able
+to detect the case when supervisor has been killed and exit.
+
+If module needs hot reloading feature, it should redefine I<can_do_hot_reload>
+method to return true value. In this case supervisor process sets a handler for
+I<SIGUSR2> signal. When I<SIGUSR2> signal is received, supervisor starts a new
+copy of the script via fork/exec, so this new copy runs a new code. New
+supervisor starts a worker process and waits a signal that this new worker is
+ready to do its job. To send that signal worker should invoke
+I<ready_to_take_over> method.  Then the new supervisor receives that signal, it
+sends I<SIGQUIT> to the old supervisor and waits for it to exit. After the old
+supervisor exited (normally new supervisor detects that because it can flock
+the pid file), the new supervisor sends signal to the worker,
+I<ready_to_take_over> method in worker returns, and worker can start doing its
+job. If supervisor receives I<SIGUSR2> when it is already in the process of
+reloading, it ignores this signal. If supervisor didn't get I<SIGQUIT> in 60
+seconds after starting hot reloading process, it sends I<SIGKILL> to the new
+supervisor and resumes normal work.
 
 =cut
 
