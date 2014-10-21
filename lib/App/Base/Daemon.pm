@@ -4,7 +4,7 @@ package App::Base::Daemon;
 
 App::Base::Daemon - A lazy person's tool for writing self-documenting, self-monitoring daemons
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     package App::Base::Daemon::example;
     use Moose;

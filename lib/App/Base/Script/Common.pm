@@ -160,7 +160,7 @@ sub _build_logger {
 
 Combines the results of base_options() and options() and then parses the
 command-line arguments of the script. Exits with a readable error message
-if the script was invoked in a non-sensical or invalid manner.
+if the script was invoked in a nonsensical or invalid manner.
 
 =cut
 
@@ -450,6 +450,8 @@ Role implements the following methods for logging
 =item B<warn>
 
 =item B<error> - note, that this also terminates the process
+
+=back
 
 =head2 Options handling
 

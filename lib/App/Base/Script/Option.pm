@@ -119,6 +119,12 @@ sub display_name {
     }
 }
 
+=head2 show_documentation
+
+Returns documentation string for the option
+
+=cut
+
 sub show_documentation {
     my $self = shift;
     if ($self->default) {
