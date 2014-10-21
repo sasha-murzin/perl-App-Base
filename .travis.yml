@@ -1,8 +1,10 @@
 language: perl
 before_install:
-  - cpanm ExtUtils::MakeMaker
+  - cpanm -n ExtUtils::MakeMaker Devel::Cover::Report::Coveralls
 perl:
   - "5.16"
   - "5.14"
   - "5.12"
   - "5.18"
+script:
+  perl Makefile.PL && make test && cover -test -report coveralls
