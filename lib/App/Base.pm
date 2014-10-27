@@ -18,7 +18,27 @@ This document describes App::Base version 0.01
 
 =head1 DESCRIPTION
 
-=head1 METHODS
+This distribution provides modules that implement common methods for writing scripts and daemons.
+
+=over 4
+
+=item L<App::Base::Script>
+
+Role implementing basic functionality for scripts
+
+=item L<App::Base::Script::OnlyOne>
+
+Role to allow only one running instance of the script
+
+=item L<App::Base::Daemon>
+
+Role implementing basic functionality for daemons
+
+=item L<App::Base::Daemon::Supervisor>
+
+Role implementing methods to support supervision and zero downtime reloading for daemons.
+
+=back
 
 =cut
 
