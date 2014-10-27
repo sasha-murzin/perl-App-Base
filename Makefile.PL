@@ -1,7 +1,9 @@
-use 5.008;
+use 5.010;
 use strict;
 use warnings;
 use ExtUtils::MakeMaker 6.64;
+
+die "OS is not supported\n" if $^O eq 'MSWin32';
 
 WriteMakefile(
     NAME          => 'App::Base',
