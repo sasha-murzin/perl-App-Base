@@ -1,8 +1,15 @@
 package App::Base::Script::Option;
+use Moose;
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
 
 =head1 NAME
 
 App::Base::Script::Option - OO interface for command-line options
+
+=head1 VERSION
+
+This document describes App::Base version 0.02
 
 =head1 SYNOPSIS
 
@@ -76,7 +83,6 @@ if the 'foo' option was declared to have option_type 'integer'.
 
 =cut
 
-use Moose;
 use MooseX::Types -declare => [qw(script_option_type)];
 use MooseX::Types::Moose qw( Str );
 

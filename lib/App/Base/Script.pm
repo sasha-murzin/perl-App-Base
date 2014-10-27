@@ -1,11 +1,12 @@
 package App::Base::Script;
 
-use Carp qw( croak );
-use Config;
-
 =head1 NAME
 
 App::Base::Script - A truly lazy person's tool for writing self-documenting, self-monitoring scripts
+
+=head1 VERSION
+
+This document describes App::Base version 0.02
 
 =head1 SYNOPSIS
 
@@ -42,6 +43,10 @@ See also, L<App::Base::Script::Common> "REQUIRED METHODS"
 
 use Moose::Role;
 with 'App::Base::Script::Common';
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
+use Carp qw( croak );
+use Config;
 use Try::Tiny;
 
 =head2 script_run($self, @ARGS)

@@ -1,4 +1,9 @@
 package App::Base::Daemon::Supervisor;
+use 5.010;
+use Moose::Role;
+with 'App::Base::Daemon';
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
 
 =head1 NAME
 
@@ -53,10 +58,6 @@ seconds after starting hot reloading process, it sends I<SIGKILL> to the new
 supervisor and resumes normal work.
 
 =cut
-
-use 5.010;
-use Moose::Role;
-with 'App::Base::Daemon';
 
 use namespace::autoclean;
 use Socket qw();

@@ -1,11 +1,18 @@
 package App::Base::Script::OnlyOne;
 use Moose::Role;
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
+
 use Path::Tiny;
 use File::Flock::Tiny;
 
 =head1 NAME
 
 App::Base::Script::OnlyOne - do not allow more than one instance running
+
+=head1 VERSION
+
+This document describes App::Base version 0.02
 
 =head1 SYNOPSIS
 

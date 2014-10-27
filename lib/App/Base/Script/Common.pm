@@ -1,9 +1,15 @@
 package App::Base::Script::Common;
 use Moose::Role;
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
 
 =head1 NAME
 
 App::Base::Script::Common - Behaviors common to App::Base::Script and App::Base::Daemon
+
+=head1 VERSION
+
+This document describes App::Base version 0.02
 
 =head1 DESCRIPTION
 

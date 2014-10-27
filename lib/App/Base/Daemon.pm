@@ -1,8 +1,17 @@
 package App::Base::Daemon;
+use 5.010;
+use Moose::Role;
+with 'App::Base::Script::Common';
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
 
 =head1 NAME
 
 App::Base::Daemon - A lazy person's tool for writing self-documenting, self-monitoring daemons
+
+=head1 VERSION
+
+This document describes App::Base version 0.02
 
 =head1 SYNOPSIS
 
@@ -77,9 +86,6 @@ Do not write pid file, and do not check if it is exist and locked.
 
 =cut
 
-use 5.010;
-use Moose::Role;
-with 'App::Base::Script::Common';
 use namespace::autoclean;
 use Try::Tiny;
 use Path::Tiny;
