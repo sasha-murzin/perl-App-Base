@@ -354,6 +354,7 @@ sub DEMOLISH {
     return;
 }
 
+no Moose::Role;
 1;
 
 __END__

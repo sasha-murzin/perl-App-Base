@@ -42,6 +42,7 @@ around script_run => sub {
     return $self->$orig(@_);
 };
 
+no Moose::Role;
 1;
 
 __END__

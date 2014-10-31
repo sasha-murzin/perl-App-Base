@@ -93,6 +93,7 @@ sub error {
     return $self->__error(@_);
 }
 
+no Moose::Role;
 1;
 
 __END__
