@@ -2,7 +2,7 @@ package App::Base::Daemon;
 use 5.010;
 use Moose::Role;
 with 'App::Base::Script::Common';
-our $VERSION = "0.02";
+our $VERSION = "0.03";
 $VERSION = eval $VERSION;
 
 =head1 NAME
@@ -11,7 +11,7 @@ App::Base::Daemon - A lazy person's tool for writing self-documenting, self-moni
 
 =head1 VERSION
 
-This document describes App::Base version 0.02
+This document describes App::Base version 0.03
 
 =head1 SYNOPSIS
 

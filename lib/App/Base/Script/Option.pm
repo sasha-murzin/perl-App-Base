@@ -1,6 +1,6 @@
 package App::Base::Script::Option;
 use Moose;
-our $VERSION = "0.02";
+our $VERSION = "0.03";
 $VERSION = eval $VERSION;
 
 =head1 NAME
@@ -9,7 +9,7 @@ App::Base::Script::Option - OO interface for command-line options
 
 =head1 VERSION
 
-This document describes App::Base version 0.02
+This document describes App::Base version 0.03
 
 =head1 SYNOPSIS
 

@@ -1,6 +1,6 @@
 package App::Base::Script::OnlyOne;
 use Moose::Role;
-our $VERSION = "0.02";
+our $VERSION = "0.03";
 $VERSION = eval $VERSION;
 
 use Path::Tiny;
@@ -12,7 +12,7 @@ App::Base::Script::OnlyOne - do not allow more than one instance running
 
 =head1 VERSION
 
-This document describes App::Base version 0.02
+This document describes App::Base version 0.03
 
 =head1 SYNOPSIS
 
