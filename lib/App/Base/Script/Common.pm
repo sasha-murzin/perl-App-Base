@@ -66,7 +66,7 @@ requires '__run';
 =head2 error
 
 All App::Base::Script::Common-implementing classes must have an
-error() method that handles exceptional cases which also 
+error() method that handles exceptional cases which also
 require a shutdown of the running script/daemon/whatever.
 
 =cut
@@ -416,6 +416,7 @@ sub __error {
     exit(-1);
 }
 
+no Moose::Role;
 1;
 
 __END__
