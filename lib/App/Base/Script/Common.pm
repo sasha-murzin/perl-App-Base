@@ -1,4 +1,5 @@
 package App::Base::Script::Common;
+use 5.010;
 use Moose::Role;
 our $VERSION = "0.02";
 $VERSION = eval $VERSION;
@@ -76,10 +77,11 @@ requires 'error';
 
 =head2 options
 
-Concrete subclasses can specify their own options list by defining
-a method called options() which returns an arrayref of
-App::Base::Script::Option objects. Alternatively, your script/daemon
-can simply get by with the standard --help option provided by its role.
+Concrete subclasses can specify their own options list by defining a method
+called options() which returns an arrayref of hashes with the parameters
+required to create L<App::Base::Script::Option> objects. Alternatively, your
+script/daemon can simply get by with the standard --help option provided by its
+role.
 
 =cut
 
@@ -196,13 +198,17 @@ sub BUILDARGS {
 
 =head2 all_options
 
-Returns the composition of options() and base_options().
+Returns the composition of options() and base_options() as list of L<App::Base::Script::Option> objects.
 
 =cut
 
 sub all_options {
     my $self = shift;
-    return [ @{ $self->options }, @{ $self->base_options } ];
+    state $cache;
+    my $class = ref($self) || $self;
+    $cache->{$class} //=
+      [ map { App::Base::Script::Option->new($_) } @{ $self->options }, @{ $self->base_options } ];
+    $cache->{$class};
 }
 
 =head2 base_options
@@ -214,10 +220,10 @@ See BUILT-IN OPTIONS
 
 sub base_options {
     return [
-        App::Base::Script::Option->new(
+        {
             name          => 'help',
             documentation => 'Show this help information',
-        ),
+        },
     ];
 }
 
@@ -329,7 +335,7 @@ Runs the script, returning the return value of __run
 =cut
 
 sub run {
-    my $self      = shift;
+    my $self = shift;
 
     # This is implemented by subclasses of App::Base::Script::Common
     $self->__run;
@@ -365,7 +371,7 @@ sub _parse_arguments {
     local @ARGV = (@$args);
 
     # Build the hash of options to pass to Getopt::Long
-    my $options      = [ @{ $self->base_options }, @{ $self->options } ];
+    my $options      = $self->all_options;
     my %options_hash = ();
     my %getopt_args  = ();
 
@@ -439,9 +445,9 @@ program via exit()
 =head2 The new() method
 
 A Moose-style constructor for the App::Base::Script::Common-derived class.
-Every such class has one important attribute: options -- an array ref of
-App::Base::Script::Option objects to be added to the command-line processing
-for the script. See App::Base::Script::Option for more information.
+Every such class has one important attribute: options -- an array ref of hashes
+describing options to be added to the command-line processing for the script.
+See L<App::Base::Script::Option> for more information.
 
 =head2 Logging methods
 

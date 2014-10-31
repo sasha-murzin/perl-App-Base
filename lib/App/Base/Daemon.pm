@@ -136,7 +136,7 @@ Run as specified user, note that it is only possible if daemon started as root
 
 =cut
 
-has user => (is => 'ro');
+has user => ( is => 'ro' );
 
 =head2 group
 
@@ -144,7 +144,7 @@ Run as specified group, note that it is only possible if daemon started as root
 
 =cut
 
-has group => (is => 'ro');
+has group => ( is => 'ro' );
 
 =head2 pid_file
 
@@ -181,28 +181,28 @@ around 'base_options' => sub {
     my $orig = shift;
     my $self = shift;
     return [
-        @{$self->$orig},
-        App::Base::Script::Option->new(
+        @{ $self->$orig },
+        {
             name          => 'no-fork',
             documentation => "Do not detach and run in the background",
-        ),
-        App::Base::Script::Option->new(
+        },
+        {
             name          => 'pid-file',
             option_type   => 'string',
             documentation => "Use specified file to save PID",
-        ),
-        App::Base::Script::Option->new(
+        },
+        {
             name          => 'no-pid-file',
             documentation => "Do not check if pidfile exists and locked",
-        ),
-        App::Base::Script::Option->new(
+        },
+        {
             name          => 'user',
             documentation => "User to run as",
-        ),
-        App::Base::Script::Option->new(
+        },
+        {
             name          => 'group',
             documentation => "Group to run as",
-        ),
+        },
     ];
 };
 
@@ -223,51 +223,62 @@ sub __run {
 
     my $pid;
     my $hot_reload = $ENV{APP_BASE_DAEMON_GEN}++ && $self->can_do_hot_reload;
-    unless ($self->getOption('no-pid-file') or $hot_reload) {
-        $pid = File::Flock::Tiny->trylock($self->pid_file);
+    unless ( $self->getOption('no-pid-file') or $hot_reload ) {
+        $pid = File::Flock::Tiny->trylock( $self->pid_file );
         unless ($pid) {
-            if ($self->can_do_hot_reload) {
-                chomp(my $pid = try { my $fh = path($self->pid_file)->openr; <$fh>; });
-                if ($pid and kill USR2 => $pid) {
+            if ( $self->can_do_hot_reload ) {
+                chomp( my $pid = try { my $fh = path( $self->pid_file )->openr; <$fh>; } );
+                if ( $pid and kill USR2 => $pid ) {
                     $self->warning("Daemon is alredy running, initiated hot reload");
                     exit 0;
-                } else {
-                    $self->error("Neither could lock pid file nor send USR2 to already running daemon.");
                 }
-            } else {
-                Carp::croak("Couldn't lock " . $self->pid_file . ". Is another copy of this daemon already running?");
+                else {
+                    $self->error(
+                        "Neither could lock pid file nor send USR2 to already running daemon.");
+                }
+            }
+            else {
+                Carp::croak( "Couldn't lock "
+                      . $self->pid_file
+                      . ". Is another copy of this daemon already running?" );
             }
         }
     }
 
     $SIG{PIPE} = 'IGNORE';
-    foreach my $signal (@{$self->shutdown_signals}) {
-        $SIG{$signal} = sub { App::Base::Daemon::_signal_shutdown($self, @_) };
+    foreach my $signal ( @{ $self->shutdown_signals } ) {
+        $SIG{$signal} = sub { App::Base::Daemon::_signal_shutdown( $self, @_ ) };
     }
 
     # Daemonize unless specifically asked not to.
-    unless ($self->getOption('no-fork') or $hot_reload) {
+    unless ( $self->getOption('no-fork') or $hot_reload ) {
         my $child_pid = fork();
-        if (!defined($child_pid)) {
+        if ( !defined($child_pid) ) {
             Carp::croak("Can't fork child process: $!");
-        } elsif ($child_pid == 0) {
+        }
+        elsif ( $child_pid == 0 ) {
             POSIX::setsid();
             my $grandchild_pid = fork();
-            if (!defined($grandchild_pid)) {
+            if ( !defined($grandchild_pid) ) {
                 Carp::croak("Can't fork grandchild process: $!");
-            } elsif ($grandchild_pid != 0) {
+            }
+            elsif ( $grandchild_pid != 0 ) {
                 $pid->close if $pid;
                 exit 0;
-            } else {
+            }
+            else {
                 # close all STD* files, and redirect STD* to /dev/null
-                for (0 .. 2) {
+                for ( 0 .. 2 ) {
                     POSIX::close($_) unless $pid and $_ == $pid->fileno;
                 }
-                (open(STDIN, '<', '/dev/null') and open(STDOUT, '>', '/dev/null') and open(STDERR, '>', '/dev/null'))
+                (         open( STDIN, '<', '/dev/null' )
+                      and open( STDOUT, '>', '/dev/null' )
+                      and open( STDERR, '>', '/dev/null' ) )
                   or die "Couldn't open /dev/null: $!";
             }
-        } else {
-            waitpid($child_pid, 0);
+        }
+        else {
+            waitpid( $child_pid, 0 );
             $pid->close if $pid;
             return $?;
         }
@@ -278,7 +289,7 @@ sub __run {
     $pid->write_pid if $pid;
 
     my $result;
-    try { $result = $self->daemon_run(@{$self->parsed_args}); }
+    try { $result = $self->daemon_run( @{ $self->parsed_args } ); }
     catch {
         $self->error($_);
     };
@@ -293,16 +304,16 @@ sub _set_user_and_group {
 
     my $user  = $self->getOption('user')  // $self->user;
     my $group = $self->getOption('group') // $self->group;
-    if ($user or $group) {
-        if ($> == 0) {
-            my ($uid, $gid) = (0, 0);
+    if ( $user or $group ) {
+        if ( $> == 0 ) {
+            my ( $uid, $gid ) = ( 0, 0 );
             if ($group) {
                 $gid = getgrnam($group) or $self->error("Can't find group $group");
             }
             if ($user) {
                 $uid = getpwnam($user) or $self->error("Can't find user $user");
             }
-            if ($uid or $gid) {
+            if ( $uid or $gid ) {
                 chown $uid, $gid, $self->pid_file;
             }
             if ($gid) {
@@ -313,7 +324,8 @@ sub _set_user_and_group {
                 POSIX::setuid($uid);
                 $self->info("Changed user to $user");
             }
-        } else {
+        }
+        else {
             $self->warning("Not running as root, can't setuid/setgid");
         }
     }
@@ -331,7 +343,7 @@ result in shutting down your daemon, use warn() instead.
 
 sub error {
     my $self = shift;
-    $self->logger->error("Shutting down: " . join(' ', @_));
+    $self->logger->error( "Shutting down: " . join( ' ', @_ ) );
 
     $self->handle_shutdown();
     return exit(-1);
