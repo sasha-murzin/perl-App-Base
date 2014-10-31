@@ -46,6 +46,7 @@ WriteMakefile(
         x_contributors => [
             'Calum Halcrow',
             'Chris Travers',
+            'Fayland Lam <fayland@gmail.com>',
             'Jean-Yves Sireau',
             'Kaveh Mousavi Zamani',
             'Matt Miller',

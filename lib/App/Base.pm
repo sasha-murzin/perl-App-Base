@@ -1,7 +1,7 @@
 package App::Base;
 use strict;
 use warnings;
-our $VERSION = "0.03";
+our $VERSION = "0.04";
 $VERSION = eval $VERSION;
 
 =head1 NAME
@@ -10,7 +10,7 @@ App::Base - modules implementing common methods for applications
 
 =head1 VERSION
 
-This document describes App::Base version 0.03
+This document describes App::Base version 0.04
 
 =head1 SYNOPSIS
 
@@ -55,6 +55,8 @@ The following people contributed to this module:
 =item Calum Halcrow
 
 =item Chris Travers
+
+=item Fayland Lam
 
 =item Jean-Yves Sireau
 
