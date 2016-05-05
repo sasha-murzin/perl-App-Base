@@ -343,7 +343,7 @@ result in shutting down your daemon, use warn() instead.
 
 sub error {
     my $self = shift;
-    $self->logger->error( "Shutting down: " . join( ' ', @_ ) );
+    warn( "Shutting down: " . join( ' ', @_ ) );
 
     $self->handle_shutdown();
     return exit(-1);
