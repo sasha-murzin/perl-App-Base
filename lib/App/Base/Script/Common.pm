@@ -412,7 +412,7 @@ SUBCLASS METHODS), then exits.
 
 sub __error {
     my $self = shift;
-    $self->logger->error( join " ", @_ );
+    warn( join " ", @_ );
     exit(-1);
 }
 
