@@ -45,7 +45,6 @@ use Moose::Role;
 with 'App::Base::Script::Common';
 our $VERSION = "0.05";
 $VERSION = eval $VERSION;
-use Carp qw( croak );
 use Config;
 use Try::Tiny;
 

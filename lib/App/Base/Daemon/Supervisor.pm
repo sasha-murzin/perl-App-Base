@@ -165,7 +165,7 @@ and after return the new process may start serving clients.
 
 sub ready_to_take_over {
     my $self = shift;
-    my $pipe = $self->supervisor_pipe or confess "Supervisor pipe is not defined";
+    my $pipe = $self->supervisor_pipe or die "Supervisor pipe is not defined";
     say $pipe "takeover";
     my $ok = <$pipe>;
     defined($ok) or $self->error("Failed to take over");

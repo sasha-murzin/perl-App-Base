@@ -25,7 +25,7 @@ This document describes App::Base version 0.05
 With this role your script will refuse to start if another copy of the script
 is running already (or if it is deadlocked or entered an infinite loop because
 of programming error). After start it tries to lock pid file, and if this is
-not possible, it croaks.
+not possible, it dies.
 
 =cut
 

@@ -237,7 +237,7 @@ sub __run {
                 }
             }
             else {
-                Carp::croak( "Couldn't lock "
+                die(  "Couldn't lock "
                       . $self->pid_file
                       . ". Is another copy of this daemon already running?" );
             }
@@ -253,13 +253,13 @@ sub __run {
     unless ( $self->getOption('no-fork') or $hot_reload ) {
         my $child_pid = fork();
         if ( !defined($child_pid) ) {
-            Carp::croak("Can't fork child process: $!");
+            die("Can't fork child process: $!");
         }
         elsif ( $child_pid == 0 ) {
             POSIX::setsid();
             my $grandchild_pid = fork();
             if ( !defined($grandchild_pid) ) {
-                Carp::croak("Can't fork grandchild process: $!");
+                die("Can't fork grandchild process: $!");
             }
             elsif ( $grandchild_pid != 0 ) {
                 $pid->close if $pid;

@@ -22,7 +22,6 @@ App::Base::Script and App::Base::Daemon classes, including options parsing
 use App::Base::Script::Option;
 
 use Cwd qw( abs_path );
-use Carp qw( croak );
 use Getopt::Long;
 use IO::Handle;
 use List::Util qw( max );
@@ -296,7 +295,7 @@ sub getOption {
         return $self->_option_values->{$option};
     }
     else {
-        croak "Unknown option $option";
+        die "Unknown option $option";
     }
 
 }
