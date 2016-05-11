@@ -13,7 +13,7 @@ This document describes App::Base version 0.05
 =head1 DESCRIPTION
 
 App::Base::Script::Common provides infrastructure that is common to the
-App::Base::Script and App::Base::Daemon classes, including options parsing
+App::Base::Script and App::Base::Daemon classes, including options parsing.
 
 =cut
 
@@ -124,7 +124,7 @@ has 'parsed_args' => (
 
 =head2 script_name
 
-The name of the running script, computed from $0
+The name of the running script, computed from $0.
 
 =cut
 

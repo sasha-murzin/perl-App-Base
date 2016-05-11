@@ -97,13 +97,13 @@ divert_stderr(
       ERROR:
         {
             warnings_like {
-            exits_ok(
-                sub {
-                    my $script = Test::Script->new;
-                    $script->error('This is really bad juju.');
-                },
-                "error() causes exit"
-            );
+                exits_ok(
+                    sub {
+                        my $script = Test::Script->new;
+                        $script->error('This is really bad juju.');
+                    },
+                    "error() causes exit"
+                );
             } [qr/^This is really bad juju/], "Expected warning about bad juju";
         }
     },
