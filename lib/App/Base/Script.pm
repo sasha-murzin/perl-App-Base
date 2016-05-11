@@ -19,7 +19,7 @@ This document describes App::Base version 0.05
 
     sub script_run {
         my $self = shift;
-        $self->info("Hello, world");
+        # do something
         return 0;
     }
 

@@ -3,6 +3,7 @@ use warnings;
 
 use Test::Most;
 use Test::Exit;
+use Test::Warn;
 
 use App::Base::Daemon;
 use File::Flock::Tiny;
@@ -63,7 +64,7 @@ sub daemon_run {
     # daemon does not exit by reaching return()
     while (1) {
         Time::HiRes::usleep(1e6);
-        raise(SIGTERM);
+        POSIX::raise(SIGTERM);
     }
     return 0;    # This won't get reached :-/
 }
@@ -83,7 +84,9 @@ use POSIX qw(SIGTERM);
 use Path::Tiny;
 use File::Slurp;
 
-exits_ok( sub { Test::Daemon->new->error("This is an error message") }, "error() forces exit" );
+warnings_like {
+    exits_ok( sub { Test::Daemon->new->error("This is an error message") }, "error() forces exit" );
+} [qr/This is an error message/], "Expected warning";
 
 my $pdir    = Path::Tiny->tempdir;
 my $pidfile = $pdir->child('Test::Daemon.pid');
@@ -115,8 +118,17 @@ NO_FORK:
 
 LE_ROI_SE_MEURT:
 {
-    local @ARGV = ( '--no-fork', '--no-pid-file' );
-    exits_ok( sub { Test::Daemon::Suicidal->new->run }, "sending SIGTERM to a daemon forces exit" );
+    my $pidfile = $pdir->child('Test::Daemon::Suicidal.pid');
+    local $ENV{APP_BASE_DAEMON_PIDDIR} = $pdir;
+    is( Test::Daemon::Suicidal->new->run, 0, 'Test::Suicidal daemon spawns detached child process' );
+    wait_file($pidfile);
+    ok( -f $pidfile, "Suicidal pid file exists" );
+    chomp( my $pid = read_file($pidfile) );
+    my $count = 50;
+    while (kill(ZERO => $pid) and $count--) {
+        Time::HiRes::usleep(50_000);
+    }
+    ok(!kill(ZERO => $pid), "Suicidal grandchild process has gone");
 }
 
 if ( $> == 0 ) {

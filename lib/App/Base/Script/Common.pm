@@ -15,13 +15,11 @@ This document describes App::Base version 0.05
 =head1 DESCRIPTION
 
 App::Base::Script::Common provides infrastructure that is common to the
-App::Base::Script and App::Base::Daemon classes, including options parsing and
-logging methods.
+App::Base::Script and App::Base::Daemon classes, including options parsing
 
 =cut
 
 use App::Base::Script::Option;
-use Log::Log4perl qw(:nowarn);
 
 use Cwd qw( abs_path );
 use Carp qw( croak );
@@ -129,7 +127,7 @@ has 'parsed_args' => (
 
 =head2 script_name
 
-The name of the running script, computed from $0 and used for logging.
+The name of the running script, computed from $0
 
 =cut
 
@@ -137,30 +135,6 @@ has 'script_name' => (
     is      => 'ro',
     default => sub { path($0)->basename; },
 );
-
-=head2 logger
-
-Logger object used for logging. Should implement debug, info, warn and error
-methods. By default L<Log::Log4perl> is used.
-
-=cut
-
-has logger => (
-    is      => 'ro',
-    lazy    => 1,
-    builder => '_build_logger',
-    handles => {
-        debug   => 'debug',
-        info    => 'info',
-        warn    => 'warn',
-        notice  => 'info',
-        warning => 'warn',
-    },
-);
-
-sub _build_logger {
-    return Log::Log4perl::get_logger();
-}
 
 =head1 METHODS
 
@@ -282,7 +256,6 @@ Outputs a statement explaining the usage of the script, then exits.
 
 sub usage {
     my $self      = shift;
-    my $log_error = shift;
 
     my $col_width = $ENV{COLUMNS} || 76;
 
@@ -302,7 +275,7 @@ sub usage {
 
     print STDERR $message;
 
-    return $log_error ? $self->error($message) : ( exit 1 );
+    exit(1);
 
 }
 
@@ -449,22 +422,6 @@ A Moose-style constructor for the App::Base::Script::Common-derived class.
 Every such class has one important attribute: options -- an array ref of hashes
 describing options to be added to the command-line processing for the script.
 See L<App::Base::Script::Option> for more information.
-
-=head2 Logging methods
-
-Role implements the following methods for logging
-
-=over 4
-
-=item B<debug>
-
-=item B<info>
-
-=item B<warn>
-
-=item B<error> - note, that this also terminates the process
-
-=back
 
 =head2 Options handling
 

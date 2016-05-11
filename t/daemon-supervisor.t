@@ -32,7 +32,6 @@ use File::Slurp;
         my $self = shift;
         my $pid_file = $self->tmp_dir->child('pid');
         write_file($pid_file, $$);
-        $self->warning("writing pid into $pid_file");
         while (1) {
             usleep 100_000;
             $self->ping_supervisor;
