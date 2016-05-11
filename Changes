@@ -1,6 +1,6 @@
 0.05 Fri May 6 2016 Binary.com <binary@cpan.org>
-    - warn instead of $self->logger->error in App::Base::Daemon error and App::Base::Script::Common __error methods
-      to prevent implicit Log::Log4perl usage. 
+    - removed logger object (Log4perl), using warn/die instead
+    - removed Carp carp/croak/confess,  using warn/die instead
 
 0.04 Fri Oct 31 2014 Binary.com <binary@cpan.org>
     - unimport Moose::Role in the end
