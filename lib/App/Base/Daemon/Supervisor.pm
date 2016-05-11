@@ -2,8 +2,6 @@ package App::Base::Daemon::Supervisor;
 use 5.010;
 use Moose::Role;
 with 'App::Base::Daemon';
-our $VERSION = "0.05";
-$VERSION = eval $VERSION;
 
 =head1 NAME
 

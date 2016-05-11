@@ -1,7 +1,5 @@
 package App::Base::Script::Option;
 use Moose;
-our $VERSION = "0.05";
-$VERSION = eval $VERSION;
 
 =head1 NAME
 

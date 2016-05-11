@@ -43,8 +43,6 @@ See also, L<App::Base::Script::Common> "REQUIRED METHODS"
 
 use Moose::Role;
 with 'App::Base::Script::Common';
-our $VERSION = "0.05";
-$VERSION = eval $VERSION;
 use Config;
 use Try::Tiny;
 

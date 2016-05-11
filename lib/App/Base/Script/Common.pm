@@ -1,8 +1,6 @@
 package App::Base::Script::Common;
 use 5.010;
 use Moose::Role;
-our $VERSION = "0.05";
-$VERSION = eval $VERSION;
 
 =head1 NAME
 

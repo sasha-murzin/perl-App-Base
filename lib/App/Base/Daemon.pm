@@ -2,8 +2,6 @@ package App::Base::Daemon;
 use 5.010;
 use Moose::Role;
 with 'App::Base::Script::Common';
-our $VERSION = "0.05";
-$VERSION = eval $VERSION;
 
 =head1 NAME
 

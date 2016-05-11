@@ -1,7 +1,5 @@
 package App::Base::Script::OnlyOne;
 use Moose::Role;
-our $VERSION = "0.05";
-$VERSION = eval $VERSION;
 
 use Path::Tiny;
 use File::Flock::Tiny;
