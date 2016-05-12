@@ -1,3 +1,7 @@
+0.05 Fri May 6 2016 Binary.com <binary@cpan.org>
+    - removed logger object (Log4perl), using warn/die instead
+    - removed Carp carp/croak/confess,  using warn/die instead
+
 0.04 Fri Oct 31 2014 Binary.com <binary@cpan.org>
     - unimport Moose::Role in the end
 

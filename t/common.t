@@ -1,5 +1,6 @@
 use Test::Most;
 use Test::FailWarnings;
+use Test::Warn;
 use Test::Exit;
 use Text::Trim;
 
@@ -19,7 +20,6 @@ with 'App::Base::Script::Common';
 
 sub __run {
     my ($self) = @_;
-    $self->notice('in the past logging at the end of a script has caused false failures');
 }
 
 sub documentation {
@@ -97,7 +97,9 @@ is( trim($scswitches),      trim($switches), 'switches() returns correct value' 
 divert_stderr(
     sub {
         exits_ok( sub { $sc->usage; }, "usage() method causes exit" );
-        exits_ok( sub { $sc->__error("Error message"); }, "__error() method causes exit" );
+        warnings_like {
+            exits_ok( sub { $sc->__error("Error message"); }, "__error() method causes exit" );
+        } [qr/^Error message/], "Expected warning on __error";
         throws_ok { $sc->getOption('bogus_option'); } qr/Unknown option/,
           'Bogus option names cause death';
 

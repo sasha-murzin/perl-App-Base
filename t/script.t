@@ -1,5 +1,6 @@
 use Test::Most;
 use Test::FailWarnings;
+use Test::Warn;
 use Test::Exit;
 use Path::Tiny;
 
@@ -88,18 +89,22 @@ divert_stderr(
       DEATH:
         {
             local @ARGV;
-            exits_ok( sub { Test::Script::ThatDies->new->run; }, "die() in script causes exit" );
+            warnings_like {
+                exits_ok( sub { Test::Script::ThatDies->new->run; }, "die() in script causes exit" );
+            } [qr/^I die/], "Expected warning about his death";
         }
 
       ERROR:
         {
-            exits_ok(
-                sub {
-                    my $script = Test::Script->new;
-                    $script->error('This is really bad juju.');
-                },
-                "error() causes exit"
-            );
+            warnings_like {
+                exits_ok(
+                    sub {
+                        my $script = Test::Script->new;
+                        $script->error('This is really bad juju.');
+                    },
+                    "error() causes exit"
+                );
+            } [qr/^This is really bad juju/], "Expected warning about bad juju";
         }
     },
 );
@@ -120,7 +125,9 @@ sleep 1;
 
 my $pid2 = fork;
 if ( $pid2 == 0 ) {
-    Test::Script::OnlyOne->new->run;
+    warnings_like {
+        Test::Script::OnlyOne->new->run;
+    } [qr/^Couldn't lock pid file/], "Expected warning about lock file";
     exit 0;
 }
 $SIG{__DIE__} = sub { kill KILL => $pid2; };
