@@ -15,7 +15,6 @@ WriteMakefile(
     PREREQ_PM     => {
         'File::Flock::Tiny'    => 0,
         'List::Util'           => 0,
-        'Log::Log4perl'        => 0,
         'Moose'                => 0,
         'Moose::Role'          => 0,
         'MooseX::Types'        => 0,
@@ -31,6 +30,7 @@ WriteMakefile(
         'Test::Most'         => 0.21,
         'Test::FailWarnings' => 0,
         'Text::Trim'         => 0,
+        'Text::Warn'         => 0,
     },
     CONFIGURE_REQUIRES => { 'ExtUtils::MakeMaker' => 6.64, },
     dist               => { COMPRESS              => 'gzip -9f', SUFFIX => 'gz', },
