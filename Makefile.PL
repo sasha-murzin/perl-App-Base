@@ -30,7 +30,7 @@ WriteMakefile(
         'Test::Most'         => 0.21,
         'Test::FailWarnings' => 0,
         'Text::Trim'         => 0,
-        'Text::Warn'         => 0,
+        'Test::Warn'         => 0,
     },
     CONFIGURE_REQUIRES => { 'ExtUtils::MakeMaker' => 6.64, },
     dist               => { COMPRESS              => 'gzip -9f', SUFFIX => 'gz', },
