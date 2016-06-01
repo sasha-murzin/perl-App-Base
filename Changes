@@ -1,3 +1,6 @@
+0.06 Wed Jun 1 2016 Binary.com <binary@cpan.org>
+    - new option --no-warn to suppress warnings from App::Base::Daemon and App::Base::Daemon::Supervisor
+
 0.05 Fri May 6 2016 Binary.com <binary@cpan.org>
     - removed logger object (Log4perl), using warn/die instead
     - removed Carp carp/croak/confess,  using warn/die instead

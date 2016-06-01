@@ -80,6 +80,10 @@ Writes PID of the daemon into specified file, by default writes pid into /var/ru
 
 Do not write pid file, and do not check if it is exist and locked.
 
+=head2 --no-warn
+
+Do not produce warnings, silent mode
+
 =head1 REQUIRED SUBCLASS METHODS
 
 =cut
@@ -201,6 +205,9 @@ around 'base_options' => sub {
             name          => 'group',
             documentation => "Group to run as",
         },
+        {   name          => 'no-warn',
+            documentation => 'Do not produce warnings',
+        },
     ];
 };
 
@@ -226,7 +233,7 @@ sub __run {
             if ( $self->can_do_hot_reload ) {
                 chomp( my $pid = try { my $fh = path( $self->pid_file )->openr; <$fh>; } );
                 if ( $pid and kill USR2 => $pid ) {
-                    warn("Daemon is alredy running, initiated hot reload");
+                    warn("Daemon is alredy running, initiated hot reload") unless $self->getOption('no-warn');
                     exit 0;
                 }
                 else {
@@ -321,7 +328,7 @@ sub _set_user_and_group {
             }
         }
         else {
-            warn("Not running as root, can't setuid/setgid");
+            warn("Not running as root, can't setuid/setgid") unless $self->getOption('no-warn');
         }
     }
 
@@ -338,7 +345,7 @@ result in shutting down your daemon, use warn() instead.
 
 sub error {
     my $self = shift;
-    warn( "Shutting down: " . join( ' ', @_ ) );
+    warn( "Shutting down: " . join( ' ', @_ ) ) unless $self->getOption('no-warn');
 
     $self->handle_shutdown();
     return exit(-1);

@@ -207,14 +207,14 @@ sub daemon_run {
                     close $par;
                 }
                 else {
-                    warn("Received unknown command from the supervised process: $_");
+                    warn("Received unknown command from the supervised process: $_") unless $self->getOption('no-warn');
                 }
             }
             my $kid = waitpid $pid, 0;
-            warn("Supervised process $kid exited with status $?");
+            warn("Supervised process $kid exited with status $?") unless $self->getOption('no-warn');
         }
         elsif ( not defined $pid ) {
-            warn("Couldn't fork: $!");
+            warn("Couldn't fork: $!") unless $self->getOption('no-warn');
         }
         else {
             local $SIG{USR2};
@@ -243,13 +243,13 @@ sub _set_hot_reload_handler {
     $SIG{USR2} = sub {
         return unless $ENV{APP_BASE_DAEMON_PID} == $$;
         if ($upgrading) {
-            warn("Received USR2, but hot reload is already in progress");
+            warn("Received USR2, but hot reload is already in progress") unless $self->getOption('no-warn');
             return;
         }
-        warn("Received USR2, initiating hot reload");
+        warn("Received USR2, initiating hot reload") unless $self->getOption('no-warn');
         my $pid;
         unless ( defined( $pid = fork ) ) {
-            warn("Could not fork, cancelling reload");
+            warn("Could not fork, cancelling reload") unless $self->getOption('no-warn');
         }
         unless ($pid) {
             exec( $ENV{APP_BASE_SCRIPT_EXE}, @{ $self->{orig_args} } )
@@ -257,10 +257,10 @@ sub _set_hot_reload_handler {
         }
         $upgrading = time;
         if ( $SIG{ALRM} ) {
-            warn("ALRM handler is already defined!");
+            warn("ALRM handler is already defined!") unless $self->getOption('no-warn');
         }
         $SIG{ALRM} = sub {
-            warn("Hot reloading timed out, cancelling");
+            warn("Hot reloading timed out, cancelling") unless $self->getOption('no-warn');
             kill KILL => $pid;
             undef $upgrading;
         };
@@ -298,7 +298,7 @@ sub _control_takeover {
         }
         else {
             local $SIG{ALRM} = sub {
-                warn("Couldn't lock the file. Sending KILL to previous generation process");
+                warn("Couldn't lock the file. Sending KILL to previous generation process") unless $self->getOption('no-warn');
             };
             alarm 5;
 
